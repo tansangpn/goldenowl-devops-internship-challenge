@@ -11,7 +11,7 @@ data "aws_ami" "ubuntu" {
 resource "aws_launch_template" "app_lt" {
   name_prefix   = "${var.project_name}-lt-"
   image_id      = data.aws_ami.ubuntu.id
-  instance_type = "t2.micro"
+  instance_type = "t3.micro"
   key_name      = var.key_name
 
   vpc_security_group_ids = [var.ec2_sg_id]
