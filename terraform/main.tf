@@ -43,3 +43,15 @@ module "alb" {
   # Truyen Security Group cua ALB vao
   alb_sg_id      = module.security_groups.alb_sg_id
 }
+#module Auto Scaling Group
+module "asg" {
+  source = "./modules/asg"
+
+  project_name     = "app-test-intern"
+  public_subnets   = [module.vpc.public_subnet_1_id, module.vpc.public_subnet_2_id]
+  ec2_sg_id        = module.security_groups.ec2_sg_id
+  target_group_arn = module.alb.target_group_arn
+  key_name         = "ec2-github-key" # Ten file key ban dau tao tren AWS
+  docker_image     = "tansangpn/app-test-intern:latest" 
+}
+
