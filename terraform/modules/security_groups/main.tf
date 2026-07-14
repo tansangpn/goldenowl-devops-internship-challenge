@@ -36,6 +36,7 @@ resource "aws_security_group" "ec2_sg" {
     description = "Allow traffic from ALB on port 3000"
     from_port = 3000
     to_port = 3000
+    protocol = "tcp"
     security_groups = [aws_security_group.alb_sg.id]
   }
   #Mo cong 22 de co the SSH vao may chu sua loi
