@@ -26,3 +26,20 @@ module "security_groups" {
   project_name = "app-test-intern"
   vpc_id = module.vpc.vpc_id
 }
+
+#module Load Balancer
+module "alb" {
+  source = "./modules/alb"
+
+  project_name   = "app-test-intern"
+  vpc_id         = module.vpc.vpc_id
+  
+  # Truyen 2 Public Subnet tu module VPC len
+  public_subnets = [
+    module.vpc.public_subnet_1_id, 
+    module.vpc.public_subnet_2_id
+  ]
+  
+  # Truyen Security Group cua ALB vao
+  alb_sg_id      = module.security_groups.alb_sg_id
+}
