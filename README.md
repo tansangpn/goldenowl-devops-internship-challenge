@@ -1,45 +1,45 @@
-# Golden Owl DevOps Internship - Technical Test
-At Golden Owl, we believe in treating infrastructure as code and automating resource provisioning to the fullest extent possible. 
+1. Kiến trúc hạ tầng
+Kiến trúc hệ thống bao gồm các thành phần cốt lõi sau:
+- Một VPC  với các Public Subnet được cấu hình trên nhiều Availability Zone khác nhau để đảm bảo khả năng chịu lỗi tối đa.
+- Application Load Balancer đóng vai trò là cổng truy cập duy nhất cho người dùng, chịu trách nhiệm phân phối lưu lượng truy cập đến các máy chủ phía sau.
+- Auto Scaling Group luôn duy trì tối thiểu 2 máy chủ EC2 chạy hệ điều hành Ubuntu. Ứng dụng Node.js được đóng gói và vận hành bên trong Docker container trên các máy chủ này.
+- Máy chủ EC2 tự động thực thi kịch bản User Data khi khởi tạo để cài đặt Docker, pull Docker Image mới nhất từ Docker Hub ("tansangpn/app-test-intern:latest") và khởi chạy container.
 
-In this technical test, we challenge you to create a robust CI build pipeline using GitHub Actions. You have the freedom to complete this test in your local environment.
+- Sơ đồ kiến trúc tổng quan:
+![Sơ đồ tổng quan hệ thống](images/System-Architecture-Diagram.drawio.png)
 
-## Your Mission 🌟
-Your mission, should you choose to accept it, is to craft a CI job that:
-1. Forks this repository to your personal GitHub account.
-2. Dockerizes a Node.js application.
-3. Establishes an automated CI/CD build process using GitHub Actions workflow and a container registry service such as DockerHub or Amazon Elastic Container Registry (ECR) or similar services.
-4. Initiates CI tests automatically when changes are pushed to the feature branch on GitHub.
-5. Utilizes GitHub Actions for Continuous Deployment (CD) to deploy the application to major cloud providers like AWS EC2, AWS ECS or Google Cloud (please submit the deployment link).
-## Nice to have 🎨
-We would be genuinely delighted if you could complement your submission with a `visual flow diagram`, illustrating the sequence of tasks you performed, including the implementation of a `load balancer` and `auto scaling` for the deployed application. This additional touch would greatly enhance our understanding and appreciation of your work.
+Để đảm bảo an toàn tối đa cho hệ thống theo nguyên tắc Least Privilege , các Security Group được cấu hình như sau:
+- ALB Security Group: Chỉ cho phép nhận lưu lượng truy cập HTTP (Cổng 80) từ Internet (0.0.0.0/0).
+- EC2 Security Group: Chỉ cho phép nhận lưu lượng truy cập tại Cổng 3000 đi ra từ ALB Security Group. Mọi truy cập 
+trực tiếp từ Internet vào máy chủ EC2 đều bị chặn hoàn toàn.
 
-Reference tools for creating visual flow diagrams:
-- https://www.drawio.com/
-- https://excalidraw.com/
-- https://www.eraser.io/
-  
-Including a visual representation of your workflow will provide valuable insights into your approach and make your submission stand out. Thank you for considering this enhancement! 
-## The Bigger Picture 🌏
-This test is designed to evaluate your ability to implement modern automated infrastructure practices while demonstrating a basic understanding of Docker containers. In your solution, we encourage you to prioritize readability, maintainability, and the principles of DevOps.
+2. Triển khai
+Trước khi triển khai, cần đã cài đặt sẵn các công cụ sau:
+- Terraform 
+- AWS CLI 
+- Git
 
- ## Submission Guidelines 📬
-Your solution should be showcased in a public GitHub repository. We encourage you to commit early and often. We prefer to see a history of iterative progress rather than a single massive push. When you've completed the assignment, kindly share the URL of your repository with us.
+Các bước triển khai:
+Bước 1: Tải mã nguồn dự án về máy local:
+git clone <ĐƯỜNG_DẪN_KHO_MÃ_NGUỒN>
+Bước 2: Khởi tạo thư mục terraform để tải các provider cần thiết
+cd <THƯ_MỤC_DỰ_ÁN>/terraform
+terraform init
+Bước 3: Kiểm tra trước khi khởi tạo hạ tầng:
+terraform validate
+terraform plan
+Bước 4: Thực thi cấp phát tài nguyên trên AWS:
+terraform apply
 
- ## Running the Node.js Application Locally  🏃‍♂️
- This is a Node.js application, and running it locally is straightforward:
-- Navigate to the `src` directory by executing `cd src`.
-- Install the project's dependencies listed in the package.json file by running `npm i`.
-- Execute `npm test` to run the application's tests.
-- Start the HTTP server with `npm start`.
+=> Sau khi hoàn tất thành công, Terraform sẽ trả ra output là địa chỉ DNS của Application Load Balancer. Sử dụng địa chỉ này trên trình duyệt để truy cập ứng dụng.
+Lưu ý: Dọn dẹp tài nguyên sau khi triển khai và test xong bằng lệnh: terraform destroy
 
-You can test it using the following command:
-  
-```shell
-curl localhost:3000
-```
-You should receive the following response:
-```json
-{"message":"Welcome warriors to Golden Owl!"}
-```
-
-Are you ready to embark on this DevOps journey with us? 🚀 Best of luck with your assignment! 🌟
+3. Minh chứng đã triển khai thành công:
+- Kết quả chạy terraform thành công:
+![Ảnh chụp khởi tạo hạ tầng bằng Terraform thành công](images/terraform-apply-success.png)
+- Truy cập web thông qua đường dẫn DNS của Application Load Balancer thành công:
+![Ảnh truy cập web thành công](images/alb-web-access.png)
+- Minh chứng Target Group báo xanh healthy cả 2 máy chủ EC2:
+![Target Group healthy](images/target-group-healthy.png)
+- Giả sử ta terminate 2 EC2 thì lập tức tạo lại 2 máy chủ EC2 mới:
+![EC2 tự động tạo lại](images/asg-auto-recovery.png)
